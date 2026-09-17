@@ -192,4 +192,27 @@ describe('Price', () => {
     expect(p3.toHuman(MUSD)).toBe('3000.00000000000299991')
     expect(p3.toHuman(WETH)).toBe('0.000333333333333333')
   })
+
+  it('should compare prices with gt and gte', () => {
+    const pair = {
+      tokenA: pairUsdcQuoteWethBase.quoteToken,
+      tokenB: pairUsdcQuoteWethBase.baseToken,
+    }
+    const lower = Price.fromSqrt(9n * 10n ** 17n, pair)
+    const higher = Price.fromSqrt(11n * 10n ** 17n, pair)
+
+    expect(higher.gt(lower)).toBe(true)
+    expect(lower.gt(higher)).toBe(false)
+    expect(higher.gte(lower)).toBe(true)
+    expect(higher.gte(higher)).toBe(true)
+  })
+
+  it('should reject fromHuman when decimals overflow parseUnits', () => {
+    expect(() =>
+      Price.fromHuman('1', {
+        quoteToken: { address: USDC, decimals: 10n ** 18n },
+        baseToken: { address: WETH, decimals: 10n ** 18n },
+      }),
+    ).toThrow('decimals sum too large for parseUnits')
+  })
 })
